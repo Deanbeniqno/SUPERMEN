@@ -1,0 +1,306 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arsitektur SUPERMEN</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .tab-button { cursor: pointer; padding: 12px 24px; background: linear-gradient(90deg, #e0f2fe, #dbeafe); border-bottom: 3px solid #3b82f6; color: #1e40af; font-weight: 600; transition: all 0.3s; }
+        .tab-button.active { background: linear-gradient(90deg, #ffffff, #f1f5f9); border-bottom: 3px solid #1e40af; }
+        .pill { padding: 6px 14px; border-radius: 9999px; margin: 4px; font-size: 0.875rem; display: inline-block; }
+        .layer-box { border-radius: 12px; padding: 20px; margin-bottom: 20px; background: linear-gradient(135deg, #f9fafb, #e5e7eb); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .sub-box { background: white; border-radius: 8px; padding: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .check-item { display: flex; align-items: center; margin-bottom: 10px; }
+        .check-item i { color: #10b981; margin-right: 8px; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-gray-100 font-sans antialiased">
+    <div class="container mx-auto p-6 max-w-6xl">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-blue-900 mb-2">Arsitektur SUPERMEN</h1>
+            <p class="text-lg text-blue-600">Sistem Informasi Pengendalian Personel Metrologi Legal</p>
+        </header>
+
+        <!-- Tab Navigation -->
+        <div class="flex justify-center mb-6 bg-white rounded-t-lg shadow-lg overflow-hidden">
+            <button class="tab-button active flex items-center" onclick="openTab('overview')"><i class="fa fa-file-alt mr-2"></i> Overview Sistem</button>
+            <button class="tab-button flex items-center" onclick="openTab('architecture')"><i class="fa fa-tools mr-2"></i> Arsitektur Teknis</button>
+            <button class="tab-button flex items-center" onclick="openTab('flowchart')"><i class="fa fa-chart-network mr-2"></i> Flowchart Proses</button>
+            <button class="tab-button flex items-center" onclick="openTab('database')"><i class="fa fa-database mr-2"></i> Struktur Database</button>
+            <button class="tab-button flex items-center" onclick="openTab('security')"><i class="fa fa-shield-alt mr-2"></i> Keamanan Sistem</button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="bg-white p-6 rounded-b-lg shadow-lg">
+            <div id="overview" class="tab-content active">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-blue-50 rounded-lg p-5 shadow-inner">
+                        <h2 class="text-xl font-semibold text-blue-800 mb-4 flex items-center"><i class="fa fa-info-circle mr-2"></i> Deskripsi Sistem</h2>
+                        <div class="mb-4">
+                            <div class="bg-blue-100 p-3 rounded-lg mb-2 flex items-center">
+                                <i class="fa fa-bullseye text-blue-500 mr-2"></i>
+                                <strong>Tujuan Utama</strong>
+                            </div>
+                            <p>Sistem terintegrasi untuk pengendalian personel metrologi legal, memfasilitasi pendaftaran, verifikasi, dan monitoring.</p>
+                        </div>
+                        <div class="mb-4">
+                            <div class="bg-green-100 p-3 rounded-lg mb-2 flex items-center">
+                                <i class="fa fa-users text-green-500 mr-2"></i>
+                                <strong>Target Pengguna</strong>
+                            </div>
+                            <ul class="list-disc ml-6">
+                                <li>Pemerintah Daerah & Dinas</li>
+                                <li>Petugas Metrologi</li>
+                                <li>Verifikator & Direktorat</li>
+                                <li>Administrator Pusat</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <div class="bg-purple-100 p-3 rounded-lg mb-2 flex items-center">
+                                <i class="fa fa-lightbulb text-purple-500 mr-2"></i>
+                                <strong>Fitur Utama</strong>
+                            </div>
+                            <ul class="list-disc ml-6">
+                                <li>Pendaftaran Online</li>
+                                <li>Dashboard Real-time</li>
+                                <li>Manajemen Sertifikasi</li>
+                                <li>Pelaporan Terintegrasi</li>
+                                <li>Verifikasi Email</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="bg-green-50 rounded-lg p-5 shadow-inner">
+                        <h2 class="text-xl font-semibold text-green-800 mb-4 flex items-center"><i class="fa fa-cogs mr-2"></i> Technology Stack</h2>
+                        <div class="mb-4">
+                            <strong class="block mb-2 text-gray-700">Frontend</strong>
+                            <span class="pill bg-blue-200 text-blue-800">HTML5</span>
+                            <span class="pill bg-blue-200 text-blue-800">CSS3</span>
+                            <span class="pill bg-blue-200 text-blue-800">JavaScript</span>
+                            <span class="pill bg-blue-200 text-blue-800">Bootstrap</span>
+                        </div>
+                        <div class="mb-4">
+                            <strong class="block mb-2 text-gray-700">Backend</strong>
+                            <span class="pill bg-green-200 text-green-800">Python</span>
+                            <span class="pill bg-green-200 text-green-800">Flask</span>
+                            <span class="pill bg-green-200 text-green-800">JWT</span>
+                            <span class="pill bg-green-200 text-green-800">SendGrid</span>
+                        </div>
+                        <div class="mb-4">
+                            <strong class="block mb-2 text-gray-700">Database</strong>
+                            <span class="pill bg-yellow-200 text-yellow-800">MySQL</span>
+                            <span class="pill bg-yellow-200 text-yellow-800">Redis</span>
+                        </div>
+                        <div>
+                            <strong class="block mb-2 text-gray-700">Infrastructure</strong>
+                            <span class="pill bg-purple-200 text-purple-800">AWS</span>
+                            <span class="pill bg-purple-200 text-purple-800">Apache</span>
+                            <span class="pill bg-purple-200 text-purple-800">SSL</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="architecture" class="tab-content">
+                <h2 class="text-xl font-semibold text-blue-900 mb-4 flex items-center"><i class="fa fa-layer-group mr-2"></i> Arsitektur Sistem SIPPL</h2>
+                <div class="layer-box">
+                    <h3 class="text-lg font-medium text-blue-700 mb-2 flex items-center"><i class="fa fa-desktop mr-2"></i> Presentation Layer</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="sub-box bg-blue-50"><strong>Landing Page</strong><br>Info sistem & akses.</div>
+                        <div class="sub-box bg-blue-50"><strong>Registration Form</strong><br>Form pendaftaran.</div>
+                        <div class="sub-box bg-blue-50"><strong>Login System</strong><br>Autentikasi email.</div>
+                        <div class="sub-box bg-blue-50"><strong>Dashboard</strong><br>Manajemen data.</div>
+                    </div>
+                </div>
+                <div class="text-center text-gray-500 my-4"><i class="fa fa-arrow-down"></i></div>
+                <div class="layer-box">
+                    <h3 class="text-lg font-medium text-green-700 mb-2 flex items-center"><i class="fa fa-cogs mr-2"></i> Application Layer</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="sub-box bg-green-50"><strong>Authentication</strong><br>JWT, Email Validation.</div>
+                        <div class="sub-box bg-green-50"><strong>Personel API</strong><br>CRUD, Validation.</div>
+                        <div class="sub-box bg-green-50"><strong>Notification</strong><br>Email, Alerts.</div>
+                    </div>
+                </div>
+                <div class="text-center text-gray-500 my-4"><i class="fa fa-arrow-down"></i></div>
+                <div class="layer-box">
+                    <h3 class="text-lg font-medium text-yellow-700 mb-2 flex items-center"><i class="fa fa-server mr-2"></i> Data Layer</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="sub-box bg-yellow-50"><strong>MySQL</strong><br>User, Sertifikasi, Logs.</div>
+                        <div class="sub-box bg-yellow-50"><strong>Redis</strong><br>Session, Cache.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="flowchart" class="tab-content">
+                <h2 class="text-xl font-semibold text-blue-900 mb-4 flex items-center"><i class="fa fa-chart-network mr-2"></i> Flowchart Proses</h2>
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium text-gray-700 mb-2 flex items-center"><i class="fa fa-user-plus mr-2"></i> Alur Pendaftaran Personel</h3>
+                    <div class="w-full text-center">
+                        <img src="https://imgur.com/IBHSf8o.png" alt="Alur Pendaftaran Personel" class="max-w-full h-auto">
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium text-gray-700 mb-2 flex items-center"><i class="fa fa-sign-in-alt mr-2"></i> Alur Login Sistem</h3>
+                    <div class="w-full text-center">
+                        <img src="https://imgur.com/jAYSTLX.png" alt="Alur Login Sistem" class="max-w-full h-auto">
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium text-gray-700 mb-2 flex items-center"><i class="fa fa-tachometer-alt mr-2"></i> Alur Dashboard</h3>
+                    <div class="w-full text-center">
+                        <img src="https://imgur.com/lxBwpCD.png" alt="Alur Dashboard" class="max-w-full h-auto">
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-medium text-gray-700 mb-2 flex items-center"><i class="fa fa-cog mr-2"></i> Alur Pemrosesan Data</h3>
+                    <div class="w-full text-center">
+                        <img src="https://imgur.com/pHt3jIv.png" alt="Alur Pemrosesan Data" class="max-w-full h-auto">
+                    </div>
+                </div>
+            </div>
+
+            <div id="database" class="tab-content">
+                <h2 class="text-xl font-semibold text-blue-900 mb-4 flex items-center"><i class="fa fa-table mr-2"></i> Struktur Database Sistem SIPPL</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-blue-50 rounded-lg p-4 shadow-inner">
+                        <h3 class="text-lg font-medium text-blue-700 mb-2 flex items-center"><i class="fa fa-user mr-2"></i> Tabel Personel</h3>
+                        <table class="w-full text-sm border-collapse">
+                            <thead><tr><th class="border p-2">Field</th><th class="border p-2">Type</th></tr></thead>
+                            <tbody>
+                                <tr><td class="border p-2">id</td><td class="border p-2">UUID PRIMARY KEY</td></tr>
+                                <tr><td class="border p-2">nip</td><td class="border p-2">VARCHAR(18) UNIQUE</td></tr>
+                                <tr><td class="border p-2">nama</td><td class="border p-2">VARCHAR(255)</td></tr>
+                                <tr><td class="border p-2">jabatan</td><td class="border p-2">VARCHAR(100)</td></tr>
+                                <tr><td class="border p-2">email</td><td class="border p-2">VARCHAR(255) UNIQUE</td></tr>
+                                <tr><td class="border p-2">status_sertifikasi</td><td class="border p-2">ENUM(aktif, kadaluarsa)</td></tr>
+                                <tr><td class="border p-2">created_at</td><td class="border p-2">TIMESTAMP</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="bg-green-50 rounded-lg p-4 shadow-inner">
+                        <h3 class="text-lg font-medium text-green-700 mb-2 flex items-center"><i class="fa fa-certificate mr-2"></i> Tabel Sertifikasi</h3>
+                        <table class="w-full text-sm border-collapse">
+                            <thead><tr><th class="border p-2">Field</th><th class="border p-2">Type</th></tr></thead>
+                            <tbody>
+                                <tr><td class="border p-2">id</td><td class="border p-2">UUID PRIMARY KEY</td></tr>
+                                <tr><td class="border p-2">personel_id</td><td class="border p-2">UUID FOREIGN KEY</td></tr>
+                                <tr><td class="border p-2">jenis_sertifikasi</td><td class="border p-2">VARCHAR(100)</td></tr>
+                                <tr><td class="border p-2">tanggal_terbit</td><td class="border p-2">DATE</td></tr>
+                                <tr><td class="border p-2">tanggal_kadaluarsa</td><td class="border p-2">DATE</td></tr>
+                                <tr><td class="border p-2">status_verifikasi</td><td class="border p-2">ENUM(diverifikasi, belum)</td></tr>
+                                <tr><td class="border p-2">created_at</td><td class="border p-2">TIMESTAMP</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="bg-yellow-50 rounded-lg p-4 shadow-inner">
+                        <h3 class="text-lg font-medium text-yellow-700 mb-2 flex items-center"><i class="fa fa-history mr-2"></i> Tabel Audit Logs</h3>
+                        <table class="w-full text-sm border-collapse">
+                            <thead><tr><th class="border p-2">Field</th><th class="border p-2">Type</th></tr></thead>
+                            <tbody>
+                                <tr><td class="border p-2">id</td><td class="border p-2">UUID PRIMARY KEY</td></tr>
+                                <tr><td class="border p-2">personel_id</td><td class="border p-2">UUID FOREIGN KEY</td></tr>
+                                <tr><td class="border p-2">aksi</td><td class="border p-2">VARCHAR(100)</td></tr>
+                                <tr><td class="border p-2">waktu</td><td class="border p-2">TIMESTAMP</td></tr>
+                                <tr><td class="border p-2">old_values</td><td class="border p-2">JSONB</td></tr>
+                                <tr><td class="border p-2">new_values</td><td class="border p-2">JSONB</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="mt-6 bg-purple-50 rounded-lg p-4 shadow-inner">
+                    <h3 class="text-lg font-medium text-purple-700 mb-2 flex items-center"><i class="fa fa-link mr-2"></i> Relasi Database</h3>
+                    <ul class="list-disc ml-6 text-sm">
+                        <li>Personel → Sertifikasi: One-to-Many</li>
+                        <li>Personel → Audit Logs: One-to-Many</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="security" class="tab-content">
+                <h2 class="text-xl font-semibold text-blue-900 mb-4 flex items-center"><i class="fa fa-shield-alt mr-2"></i> Keamanan Sistem SIPPL</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-blue-50 rounded-lg p-4 shadow-inner">
+                        <h3 class="text-lg font-medium text-blue-700 mb-2 flex items-center"><i class="fa fa-key mr-2"></i> Keamanan Autentikasi</h3>
+                        <div class="check-item"><i class="fa fa-check-circle"></i> Email Domain Validation (.go.id)</div>
+                        <div class="check-item"><i class="fa fa-check-circle"></i> Password Hashing (Bcrypt)</div>
+                        <div class="check-item"><i class="fa fa-check-circle"></i> JWT Token Security</div>
+                        <div class="check-item"><i class="fa fa-check-circle"></i> Session Management</div>
+                    </div>
+                    <div class="bg-red-50 rounded-lg p-4 shadow-inner">
+                        <h3 class="text-lg font-medium text-red-700 mb-2 flex items-center"><i class="fa fa-database mr-2"></i> Keamanan Data</h3>
+                        <div class="check-item"><i class="fa fa-check-circle"></i> Input Validation</div>
+                        <div class="check-item"><i class="fa fa-check-circle"></i> SQL Injection Prevention</div>
+                        <div class="check-item"><i class="fa fa-check-circle"></i> XSS Protection</div>
+                        <div class="check-item"><i class="fa fa-check-circle"></i> Data Encryption</div>
+                    </div>
+                    <div class="bg-green-50 rounded-lg p-4 shadow-inner">
+                        <h3 class="text-lg font-medium text-green-700 mb-2 flex items-center"><i class="fa fa-network-wired mr-2"></i> Keamanan Jaringan</h3>
+                        <div class="check-item"><i class="fa fa-check-circle"></i> HTTPS/TLS 1.3</div>
+                        <div class="check-item"><i class="fa fa-check-circle"></i> Rate Limiting</div>
+                        <div class="check-item"><i class="fa fa-check-circle"></i> CORS Policy</div>
+                        <div class="check-item"><i class="fa fa-check-circle"></i> Firewall</div>
+                    </div>
+                    <div class="bg-yellow-50 rounded-lg p-4 shadow-inner">
+                        <h3 class="text-lg font-medium text-yellow-700 mb-2 flex items-center"><i class="fa fa-eye mr-2"></i> Monitoring & Audit</h3>
+                        <div class="check-item"><i class="fa fa-check-circle"></i> Activity Logging</div>
+                        <div class="check-item"><i class="fa fa-check-circle"></i> Security Monitoring</div>
+                        <div class="check-item"><i class="fa fa-check-circle"></i> Backup & Recovery</div>
+                        <div class="check-item"><i class="fa fa-check-circle"></i> Compliance Audit</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+    </script>
+</body>
+</html>
